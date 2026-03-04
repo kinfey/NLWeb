@@ -5,6 +5,7 @@ import logging
 import time
 import json
 from typing import Optional
+from core.utils.utils import sanitize_log
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ async def logging_middleware(request: web.Request, handler):
     safe_headers = {k: v for k, v in request_info['headers'].items() 
                    if k.lower() not in ['authorization', 'cookie', 'x-api-key']}
     
-    logger.info(f"Request: {request.method} {request.path}", extra={
+    logger.info(f"Request: {sanitize_log(request.method)} {sanitize_log(request.path)}", extra={
         'request_method': request.method,
         'request_path': request.path,
         'request_query': request_info['query'],
@@ -50,7 +51,7 @@ async def logging_middleware(request: web.Request, handler):
         
         # Log response
         logger.info(
-            f"Response: {request.method} {request.path} - {response.status} ({duration:.3f}s)",
+            f"Response: {sanitize_log(request.method)} {sanitize_log(request.path)} - {response.status} ({duration:.3f}s)",
             extra={
                 'request_method': request.method,
                 'request_path': request.path,
@@ -69,7 +70,7 @@ async def logging_middleware(request: web.Request, handler):
         # Log HTTP exceptions
         duration = time.time() - start_time
         logger.warning(
-            f"HTTP Exception: {request.method} {request.path} - {ex.status} ({duration:.3f}s)",
+            f"HTTP Exception: {sanitize_log(request.method)} {sanitize_log(request.path)} - {ex.status} ({duration:.3f}s)",
             extra={
                 'request_method': request.method,
                 'request_path': request.path,
@@ -84,7 +85,7 @@ async def logging_middleware(request: web.Request, handler):
         # Log other exceptions
         duration = time.time() - start_time
         logger.error(
-            f"Exception: {request.method} {request.path} - 500 ({duration:.3f}s)",
+            f"Exception: {sanitize_log(request.method)} {sanitize_log(request.path)} - 500 ({duration:.3f}s)",
             extra={
                 'request_method': request.method,
                 'request_path': request.path,

@@ -56,9 +56,15 @@
         
         async function joinConversation() {
             console.log('joinConversation() called');
-            
+
             if (!conversationId) {
                 showError('Invalid join link - no conversation ID provided');
+                return;
+            }
+
+            // Validate conversation ID to prevent request forgery
+            if (!/^[a-zA-Z0-9_-]+$/.test(conversationId)) {
+                showError('Invalid conversation ID format');
                 return;
             }
             

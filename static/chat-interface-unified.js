@@ -585,7 +585,7 @@ export class UnifiedChatInterface {
     
     // Create complete message object with structured content
     const message = {
-      message_id: `msg_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+      message_id: `msg_${Date.now()}_${crypto.randomUUID().substring(0, 9)}`,
       conversation_id: this.state.conversationId,
       type: 'message',
       message_type: 'user',
@@ -1622,9 +1622,11 @@ export class UnifiedChatInterface {
       });
     }
 
-    // Shuffle the array using Fisher-Yates algorithm
+    // Shuffle the array using Fisher-Yates algorithm with secure randomness
     for (let i = allQueries.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
+      const arr = new Uint32Array(1);
+      crypto.getRandomValues(arr);
+      const j = arr[0] % (i + 1);
       [allQueries[i], allQueries[j]] = [allQueries[j], allQueries[i]];
     }
 
@@ -1834,7 +1836,7 @@ export class UnifiedChatInterface {
     // If not logged in, use or create anonymous user ID
     let userId = localStorage.getItem('userId');
     if (!userId) {
-      userId = 'user_' + Math.random().toString(36).substring(2, 11);
+      userId = 'user_' + crypto.randomUUID().substring(0, 9);
       localStorage.setItem('userId', userId);
     }
     return userId;

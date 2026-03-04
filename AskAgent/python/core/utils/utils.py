@@ -3,6 +3,13 @@ from core.config import CONFIG
 import json
 from urllib.parse import quote
 
+
+def sanitize_log(value):
+    """Sanitize value for safe logging by removing newlines and control characters."""
+    if isinstance(value, str):
+        return value.replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t')
+    return value
+
 recipe_sites = ['seriouseats', 'hebbarskitchen', 'latam_recipes',
                 'woksoflife', 'cheftariq',  'spruce', 'nytimes']
 

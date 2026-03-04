@@ -6,6 +6,7 @@ import jwt
 import time
 from typing import Optional, Set
 from core.config import CONFIG
+from core.utils.utils import sanitize_log
 
 logger = logging.getLogger(__name__)
 
@@ -74,12 +75,12 @@ async def auth_middleware(request: web.Request, handler):
     mode = config.get('mode', 'production')
     
     if not auth_token and mode == 'development':
-        logger.debug(f"No auth token for {path}, allowing in development mode")
+        logger.debug(f"No auth token for {sanitize_log(path)}, allowing in development mode")
         request['user'] = {'id': 'dev_user', 'authenticated': False}
         return await handler(request)
     
     if not auth_token:
-        logger.warning(f"No auth token provided for protected endpoint: {path}")
+        logger.warning(f"No auth token provided for protected endpoint: {sanitize_log(path)}")
         return web.json_response(
             {'error': 'Authentication required', 'type': 'auth_required'},
             status=401,

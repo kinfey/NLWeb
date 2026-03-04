@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 import os
 from pathlib import Path
 from core.config import CONFIG
+from core.utils.utils import sanitize_log
 
 logger = logging.getLogger(__name__)
 
@@ -228,8 +229,7 @@ async def oauth_token_handler(request: web.Request) -> web.Response:
                 headers=headers
             ) as resp:
                 if resp.status != 200:
-                    error_text = await resp.text()
-                    logger.error(f"Token exchange failed for {provider}: {error_text}")
+                    logger.error(f"Token exchange failed for {provider}: HTTP {resp.status}")
                     return web.json_response(
                         {'error': 'Token exchange failed'},
                         status=400
@@ -248,7 +248,7 @@ async def oauth_token_handler(request: web.Request) -> web.Response:
                 
                 access_token = token_response.get('access_token')
                 if not access_token:
-                    logger.error(f"No access token in response from {provider}")
+                    logger.error(f"No access token in response from {sanitize_log(provider)}")
                     return web.json_response(
                         {'error': 'No access token received'},
                         status=400
@@ -305,7 +305,7 @@ async def get_user_info(session: aiohttp.ClientSession, provider: str, access_to
         # Get basic user info
         async with session.get(provider_config['userinfo_url'], headers=headers) as resp:
             if resp.status != 200:
-                logger.error(f"Failed to get user info from {provider}: {resp.status}")
+                logger.error(f"Failed to get user info from {sanitize_log(provider)}: {resp.status}")
                 return None
             
             user_data = await resp.json()
@@ -355,7 +355,7 @@ async def get_user_info(session: aiohttp.ClientSession, provider: str, access_to
         return user_info
         
     except Exception as e:
-        logger.error(f"Error getting user info from {provider}: {e}")
+        logger.error(f"Error getting user info from {sanitize_log(provider)}: {e}")
         return None
 
 

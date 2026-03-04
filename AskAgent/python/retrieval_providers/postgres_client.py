@@ -81,8 +81,7 @@ class PgVectorClient(RetrievalClientBase):
             logger.error(error_msg)
             raise ValueError(error_msg)
         
-        logger.info(f"Using PostgreSQL database: {self.dbname} on {self.host}:{self.port}")
-        logger.info(f"Table name: {self.default_collection_name}")
+        logger.info(f"PostgreSQL client configured for table: {self.default_collection_name}")
     
     def _get_config_from_postgres_connection_string(self, connection_string: str) -> Dict[str, Any]:
         """
@@ -162,8 +161,7 @@ class PgVectorClient(RetrievalClientBase):
                         if not self.password:
                             raise ValueError("Missing password or password_env in PostgreSQL configuration")
                             
-                        # Log connection attempt (without sensitive information)
-                        logger.info(f"Connecting to PostgreSQL at {self.host}:{self.port}/{self.dbname} with user {self.username}")
+                        logger.info("Connecting to PostgreSQL...")
                         
                         # Set up async connection pool with reasonable defaults
                         conninfo = f"host={self.host} port={self.port} dbname={self.dbname} user={self.username} password={self.password}"
@@ -189,7 +187,7 @@ class PgVectorClient(RetrievalClientBase):
                                     logger.warning("pgvector extension not found in the database")
                     
                     except Exception as e:
-                        logger.exception(f"Error creating PostgreSQL connection pool: {e}")
+                        logger.error(f"Error creating PostgreSQL connection pool: {type(e).__name__}")
                         raise
         
         return self._pool
@@ -374,10 +372,8 @@ class PgVectorClient(RetrievalClientBase):
                         return count
                     except Exception as e:
                         await conn.rollback()
-                        print(f"SQL Error: {e}")
-                        # Try logging part of the query and values for debugging
-                        print(f"Query start: {query[:200]}...")
-                        print(f"First few values: {str(values[:10])}")
+                        logger.error(f"SQL Error: {e}")
+                        logger.debug(f"Query start: {query[:200]}...")
                         raise
             
             try:
@@ -570,7 +566,6 @@ class PgVectorClient(RetrievalClientBase):
                     "host": self.host,
                     "port": self.port,
                     "database": self.dbname,
-                    "username": self.username,
                     "table": self.table_name
                 }
             }
@@ -622,7 +617,6 @@ class PgVectorClient(RetrievalClientBase):
                     "host": self.host,
                     "port": self.port,
                     "database": self.dbname,
-                    "username": self.username,
                     "table": self.table_name
                 }
             }

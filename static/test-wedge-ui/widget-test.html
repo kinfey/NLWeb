@@ -107,7 +107,7 @@
             type: "setStructuredContent",
             payload: normalized,
           },
-          "*",
+          window.location.origin,
         );
       };
 
@@ -163,6 +163,10 @@
       });
 
       window.addEventListener("message", (event) => {
+        // Validate message origin
+        if (event.origin !== window.location.origin && event.origin !== "null") {
+          return;
+        }
         if (event.data?.type === "widgetReady") {
           widgetHasSignaledReady = true;
           if (pendingStructured) {

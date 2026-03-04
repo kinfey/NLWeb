@@ -64,10 +64,10 @@ class ShopifyDescriptionGenerator:
         """Extract sitemap URLs from robots.txt and detect store type.
         Returns: (sitemaps, store_type)
         """
-        if not domain.startswith(('http://', 'https://')):
-            domain = f'https://{domain}'
-        
         parsed = urlparse(domain)
+        if parsed.scheme not in ('http', 'https'):
+            domain = f'https://{domain}'
+            parsed = urlparse(domain)
         robots_url = f"{parsed.scheme}://{parsed.netloc}/robots.txt"
         
         try:
@@ -126,7 +126,7 @@ class ShopifyDescriptionGenerator:
                 line = line.strip()
                 if line.lower().startswith('sitemap:'):
                     sitemap_url = line.split(':', 1)[1].strip()
-                    if not sitemap_url.startswith(('http://', 'https://')):
+                    if urlparse(sitemap_url).scheme not in ('http', 'https'):
                         sitemap_url = urljoin(domain, sitemap_url)
                     sitemaps.append(sitemap_url)
             
@@ -179,10 +179,10 @@ class ShopifyDescriptionGenerator:
     
     def get_default_sitemaps(self, domain: str) -> List[str]:
         """Try default sitemap locations."""
-        if not domain.startswith(('http://', 'https://')):
-            domain = f'https://{domain}'
-        
         parsed = urlparse(domain)
+        if parsed.scheme not in ('http', 'https'):
+            domain = f'https://{domain}'
+            parsed = urlparse(domain)
         base_url = f"{parsed.scheme}://{parsed.netloc}"
         
         return [

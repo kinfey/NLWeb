@@ -7,6 +7,7 @@ import json
 import uuid
 import time
 import random
+import re
 import base64
 import traceback
 import aiofiles
@@ -29,6 +30,7 @@ from core.schemas import (
 )
 from core.retriever import get_vector_db_client
 from core import conversation_history
+from core.utils.utils import sanitize_log
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +98,7 @@ async def create_conversation_handler(request: web.Request) -> web.Response:
         
         # Get authenticated user or create anonymous user
         user = request.get('user')
-        logger.info(f"Create conversation - user from request: {user}")
+        logger.info(f"Create conversation - user from request: {sanitize_log(str(user))}")
         
         if not user or not user.get('authenticated'):
             # Check if anonymous user ID was provided in request
@@ -111,7 +113,7 @@ async def create_conversation_handler(request: web.Request) -> web.Response:
                 'authenticated': False,
                 'is_anonymous': True
             }
-            logger.info(f"Using anonymous user: {user['id']}")
+            logger.info(f"Using anonymous user: {sanitize_log(user['id'])}")
         
         # Get title or use default
         title = data.get('title', 'New Conversation')
@@ -738,7 +740,7 @@ async def leave_conversation_handler(request: web.Request) -> web.Response:
                     await conn.websocket.close(code=1000, message=b'Left conversation')
                     await ws_manager.remove_connection(conversation_id, user_id)
                 except Exception as e:
-                    logger.warning(f"Error closing WebSocket for {user_id}: {e}")
+                    logger.warning(f"Error closing WebSocket for {sanitize_log(user_id)}: {e}")
         
         # Check if this was the last participant
         remaining_participants = len(conversation.active_participants)
@@ -761,7 +763,7 @@ async def leave_conversation_handler(request: web.Request) -> web.Response:
             await ws_manager.broadcast_to_conversation(conversation_id, participant_update)
         else:
             # Last participant left - consider marking conversation as inactive
-            logger.info(f"Last participant left conversation {conversation_id}")
+            logger.info(f"Last participant left conversation {sanitize_log(conversation_id)}")
             # Optionally: Mark conversation as inactive in storage
             conversation.metadata = conversation.metadata or {}
             conversation.metadata['status'] = 'inactive'
@@ -931,11 +933,15 @@ async def join_via_share_link_get_handler(request: web.Request) -> web.Response:
     so the user can join through the UI.
     """
     conv_id = request.match_info['conv_id']
-    
+
+    # Validate conv_id to prevent open redirect via path traversal
+    if not re.match(r'^[a-zA-Z0-9_-]+$', conv_id):
+        return web.Response(text='Invalid conversation ID', status=400)
+
     # Redirect to join.html with the conversation ID as a parameter
     # The frontend will handle the actual join process
     redirect_url = f"/static/join.html?conv_id={conv_id}"
-    
+
     return web.HTTPFound(location=redirect_url)
 
 
@@ -992,7 +998,7 @@ async def websocket_handler(request: web.Request) -> web.WebSocketResponse:
                             'provider': claims.get('provider', 'oauth'),
                             'authenticated': True
                         }
-                        logger.info(f"Decoded JWT token for WebSocket user: {user['id']}")
+                        logger.info(f"Decoded JWT token for WebSocket user: {sanitize_log(user['id'])}")
                     else:
                         # Not JWT either, could be an OAuth access token
                         # Check if user info was passed in query params
@@ -1008,9 +1014,9 @@ async def websocket_handler(request: web.Request) -> web.WebSocketResponse:
                                 'authenticated': True,
                                 'token': auth_token
                             }
-                            logger.info(f"Using user info from query params for WebSocket: {user['id']}")
+                            logger.info(f"Using user info from query params for WebSocket: {sanitize_log(user['id'])}")
                         else:
-                            logger.warning(f"Unknown token format with {len(parts)} parts and no user info in query")
+                            logger.warning(f"Unknown token format with {sanitize_log(str(len(parts)))} parts and no user info in query")
             except Exception as e:
                 logger.warning(f"Failed to validate auth token: {e}")
     

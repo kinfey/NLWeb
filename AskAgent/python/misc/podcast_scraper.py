@@ -46,6 +46,10 @@ class NPRPodcastScraperComplete:
     def get_page(self, url):
         """Fetch webpage content"""
         try:
+            parsed = urllib.parse.urlparse(url)
+            if parsed.scheme not in ('http', 'https'):
+                print(f"Skipping non-HTTP URL: {url}")
+                return None
             req = urllib.request.Request(url, headers=self.headers)
             # Add 10 second timeout
             with urllib.request.urlopen(req, timeout=10) as response:

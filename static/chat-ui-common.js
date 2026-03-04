@@ -26,6 +26,13 @@ export class ChatUICommon {
   }
 
   /**
+   * Sanitize a URL to prevent dangerous protocols
+   */
+  sanitizeUrl(url) {
+    return this.jsonRenderer.sanitizeUrl(url);
+  }
+
+  /**
    * Escape HTML special characters to prevent XSS
    */
   escapeHtml(str) {
@@ -91,7 +98,7 @@ export class ChatUICommon {
       if (details.length > 0) {
         const detailsDiv = document.createElement('div');
         detailsDiv.className = 'recipe-details';
-        detailsDiv.innerHTML = details.join(' • ');
+        detailsDiv.textContent = details.join(' \u2022 ');
         container.appendChild(detailsDiv);
       }
     }
@@ -100,7 +107,7 @@ export class ChatUICommon {
     const imageUrl = this.extractImageUrl(schemaObj);
     if (imageUrl) {
       const img = document.createElement('img');
-      img.src = imageUrl;
+      img.src = this.sanitizeUrl(imageUrl);
       img.className = 'item-image';
       img.loading = 'lazy';
       img.onerror = function() { this.style.display = 'none'; };
@@ -118,10 +125,11 @@ export class ChatUICommon {
         ratingDiv.className = 'item-rating';
         const stars = '★'.repeat(Math.round(ratingValue));
         const emptyStars = '☆'.repeat(5 - Math.round(ratingValue));
-        ratingDiv.innerHTML = `${stars}${emptyStars} ${ratingValue}/5`;
+        let ratingText = `${stars}${emptyStars} ${ratingValue}/5`;
         if (reviewCount) {
-          ratingDiv.innerHTML += ` (${reviewCount} reviews)`;
+          ratingText += ` (${reviewCount} reviews)`;
         }
+        ratingDiv.textContent = ratingText;
         container.appendChild(ratingDiv);
       }
     }
@@ -692,7 +700,7 @@ export class ChatUICommon {
     
     if (itemUrl) {
       const nameLink = document.createElement('a');
-      nameLink.href = itemUrl;
+      nameLink.href = this.sanitizeUrl(itemUrl);
       nameLink.textContent = item.name;
       nameLink.target = '_blank';
       nameLink.style.cssText = 'color: #0066cc; text-decoration: none; font-weight: bold;';
@@ -775,10 +783,21 @@ export class ChatUICommon {
     container.className = 'statistics-result-container';
     container.style.cssText = 'display: block; margin: 15px 0; padding: 15px; background-color: #f8f9fa; border-radius: 8px; min-height: 400px; clear: both;';
 
-    // Insert the HTML content directly
+    // Insert the HTML content safely using DOMParser to strip scripts
     if (item.html) {
-      container.innerHTML = item.html;
-    } else {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(item.html, 'text/html');
+      // Remove script tags and event handler attributes
+      doc.querySelectorAll('script').forEach(el => el.remove());
+      doc.body.querySelectorAll('*').forEach(el => {
+        for (const attr of [...el.attributes]) {
+          if (attr.name.startsWith('on')) el.removeAttribute(attr.name);
+        }
+      });
+      // Append sanitized nodes
+      while (doc.body.firstChild) {
+        container.appendChild(doc.body.firstChild);
+      }
     }
 
     // Add a flag to the container so we can initialize DataCommons later when it's in the DOM
