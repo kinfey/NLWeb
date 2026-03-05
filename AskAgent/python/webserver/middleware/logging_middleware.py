@@ -32,11 +32,11 @@ async def logging_middleware(request: web.Request, handler):
                    if k.lower() not in ['authorization', 'cookie', 'x-api-key']}
     
     logger.info(f"Request: {sanitize_log(request.method)} {sanitize_log(request.path)}", extra={
-        'request_method': request.method,
-        'request_path': request.path,
-        'request_query': request_info['query'],
-        'request_headers': safe_headers,
-        'request_remote': request_info['remote']
+        'request_method': sanitize_log(request.method),
+        'request_path': sanitize_log(request.path),
+        'request_query': sanitize_log(str(request_info['query'])),
+        'request_headers': {k: sanitize_log(str(v)) for k, v in safe_headers.items()},
+        'request_remote': sanitize_log(request_info['remote'])
     })
     
     # Store request start time for use in handlers
