@@ -1534,4 +1534,7 @@ if __name__ == "__main__":
     print("Starting analysis server...")
     print("Open http://localhost:8050 in your browser")
     print("Crawl status at http://localhost:8050/status")
-    app.run(host="0.0.0.0", port=8050, debug=True)
+    # Only enable debug mode if explicitly set via environment variable
+    import os
+    debug_mode = os.getenv('FLASK_DEBUG', 'false').lower() == 'true'
+    app.run(host="0.0.0.0", port=8050, debug=debug_mode)
