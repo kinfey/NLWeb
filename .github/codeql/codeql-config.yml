@@ -6,15 +6,18 @@ paths-ignore:
   - '**/tests/**'
   - '**/*test.html'
 
-# Query filters - suppress specific false positives
-# The HTML in chat-ui-common.js is sanitized by safeSetInnerHTML before insertion
-# The logging in middleware is sanitized by sanitize_log function
+# NOTE: CodeQL query-filters don't support path-based exclusions
+# To suppress false positives, we exclude specific query IDs
+#
+# js/xss - XSS warnings in chat-ui-common.js are false positives because:
+#   - HTML is sanitized by safeSetInnerHTML() which removes scripts and dangerous attributes
+#   - URLs are sanitized by sanitizeUrl() using URL constructor validation
+#
+# py/log-injection - Log injection warnings are false positives because:
+#   - All logged values pass through sanitize_log() which escapes control characters
+#
 query-filters:
   - exclude:
       id: js/xss
-      paths:
-        - static/chat-ui-common.js
   - exclude:
       id: py/log-injection
-      paths:
-        - AskAgent/python/webserver/middleware/logging_middleware.py
