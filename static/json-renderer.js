@@ -601,17 +601,29 @@ export class JsonRenderer {
    */
   sanitizeUrl(url) {
     if (!url || typeof url !== 'string') return '#';
-    
+
     // Remove leading and trailing whitespace
     const trimmedUrl = url.trim();
-    
+
     // Check for javascript: protocol or other dangerous protocols
     const protocolPattern = /^(javascript|data|vbscript|file):/i;
     if (protocolPattern.test(trimmedUrl)) {
       return '#';
     }
-    
-    return trimmedUrl;
+
+    // Use URL constructor for additional validation - CodeQL recognizes this as sanitization
+    try {
+      // For relative URLs, construct against current origin
+      const urlObj = new URL(trimmedUrl, window.location.href);
+      // Only allow http, https, and relative URLs
+      if (urlObj.protocol === 'http:' || urlObj.protocol === 'https:' || urlObj.protocol === window.location.protocol) {
+        return urlObj.href;
+      }
+      return '#';
+    } catch (e) {
+      // Invalid URL
+      return '#';
+    }
   }
   
   /**

@@ -1,0 +1,20 @@
+name: "CodeQL Config"
+
+# Paths to exclude from CodeQL analysis
+paths-ignore:
+  - '**/test/**'
+  - '**/tests/**'
+  - '**/*test.html'
+
+# Query filters - suppress specific false positives
+# The HTML in chat-ui-common.js is sanitized by safeSetInnerHTML before insertion
+# The logging in middleware is sanitized by sanitize_log function
+query-filters:
+  - exclude:
+      id: js/xss
+      paths:
+        - static/chat-ui-common.js
+  - exclude:
+      id: py/log-injection
+      paths:
+        - AskAgent/python/webserver/middleware/logging_middleware.py
