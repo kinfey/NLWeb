@@ -43,20 +43,62 @@ export class ChatUICommon {
   }
 
   /**
-   * Safely set HTML content by parsing through DOMParser
+   * Safely set HTML content by parsing through DOMParser and sanitizing
    * This provides a sanitization layer that CodeQL can track
    */
   safeSetInnerHTML(element, htmlString) {
-    // Parse HTML through DOMParser for sanitization
+    // Parse HTML through DOMParser
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlString, 'text/html');
+
+    // Sanitize all nodes - remove script tags and dangerous attributes
+    const sanitizeNode = (node) => {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        // Remove script and style tags
+        if (node.tagName === 'SCRIPT' || node.tagName === 'STYLE') {
+          return null;
+        }
+
+        // Remove event handler attributes and other dangerous attributes
+        const attributes = [...node.attributes];
+        attributes.forEach(attr => {
+          if (attr.name.startsWith('on') ||
+              attr.name === 'srcdoc' ||
+              attr.name === 'formaction' ||
+              attr.name === 'form') {
+            node.removeAttribute(attr.name);
+          }
+
+          // Sanitize URLs in href and src
+          if (attr.name === 'href' || attr.name === 'src') {
+            const url = attr.value.trim();
+            if (/^(javascript|data|vbscript|file):/i.test(url)) {
+              node.removeAttribute(attr.name);
+            }
+          }
+        });
+
+        // Recursively sanitize children
+        const children = [...node.childNodes];
+        children.forEach(child => {
+          const sanitized = sanitizeNode(child);
+          if (sanitized === null && child.parentNode) {
+            child.parentNode.removeChild(child);
+          }
+        });
+      }
+      return node;
+    };
 
     // Clear existing content
     element.textContent = '';
 
-    // Append sanitized nodes
+    // Sanitize and append nodes
     Array.from(doc.body.childNodes).forEach(node => {
-      element.appendChild(node.cloneNode(true));
+      const sanitized = sanitizeNode(node.cloneNode(true));
+      if (sanitized !== null) {
+        element.appendChild(sanitized);
+      }
     });
   }
 
