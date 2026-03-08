@@ -242,7 +242,8 @@ async def index_page(request: web.Request) -> web.Response:
             charset='utf-8'
         )
     except Exception as e:
-        print(f"Error serving index page: {e}")
+        # Log error internally but don't expose to users
+        logger.error(f"Error serving index page", exc_info=False)
         # Don't expose internal error details to users
         return web.Response(
             text="Error loading page. Please try again later.",

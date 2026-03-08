@@ -561,13 +561,7 @@ class PgVectorClient(RetrievalClientBase):
                 "database_version": None,
                 "pgvector_installed": False,
                 "table_exists": False,
-                "document_count": 0,
-                "configuration": {
-                    "host": self.host,
-                    "port": self.port,
-                    "database": self.dbname,
-                    "table": self.table_name
-                }
+                "document_count": 0
             }
             
             try:

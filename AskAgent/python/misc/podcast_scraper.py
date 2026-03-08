@@ -92,12 +92,21 @@ class NPRPodcastScraperComplete:
         links = self.extract_links(html)
         for link in links:
             href = link['href']
-            if href and ('feeds.npr.org' in href or '.xml' in href or '/rss' in href):
-                if 'addrssfeed=' in href:
-                    rss_match = re.search(r'addrssfeed=([^&]+)', href)
-                    if rss_match:
-                        return urllib.parse.unquote(rss_match.group(1))
-                return href
+            # Use proper URL parsing to check domain (not substring matching)
+            if href:
+                try:
+                    parsed = urllib.parse.urlparse(href)
+                    is_npr_feed = parsed.netloc == 'feeds.npr.org' or parsed.netloc.endswith('.feeds.npr.org')
+                    is_rss = '.xml' in href or '/rss' in href
+                    if is_npr_feed or is_rss:
+                        if 'addrssfeed=' in href:
+                            rss_match = re.search(r'addrssfeed=([^&]+)', href)
+                            if rss_match:
+                                return urllib.parse.unquote(rss_match.group(1))
+                        return href
+                except Exception:
+                    # If URL parsing fails, skip this link
+                    continue
                 
         return ''
         

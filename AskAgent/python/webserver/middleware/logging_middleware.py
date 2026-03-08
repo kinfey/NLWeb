@@ -32,11 +32,11 @@ async def logging_middleware(request: web.Request, handler):
                    if k.lower() not in ['authorization', 'cookie', 'x-api-key']}
     
     logger.info(f"Request: {sanitize_log(request.method)} {sanitize_log(request.path)}", extra={
-        'request_method': sanitize_log(request.method),
-        'request_path': sanitize_log(request.path),
+        'request_method': sanitize_log(str(request.method)),
+        'request_path': sanitize_log(str(request.path)),
         'request_query': sanitize_log(str(request_info['query'])),
         'request_headers': {k: sanitize_log(str(v)) for k, v in safe_headers.items()},
-        'request_remote': sanitize_log(request_info['remote'])
+        'request_remote': sanitize_log(str(request_info['remote']))
     })
     
     # Store request start time for use in handlers
@@ -53,8 +53,8 @@ async def logging_middleware(request: web.Request, handler):
         logger.info(
             f"Response: {sanitize_log(request.method)} {sanitize_log(request.path)} - {response.status} ({duration:.3f}s)",
             extra={
-                'request_method': request.method,
-                'request_path': request.path,
+                'request_method': sanitize_log(str(request.method)),
+                'request_path': sanitize_log(str(request.path)),
                 'response_status': response.status,
                 'response_duration': duration,
                 'response_size': response.content_length or 0
@@ -72,11 +72,11 @@ async def logging_middleware(request: web.Request, handler):
         logger.warning(
             f"HTTP Exception: {sanitize_log(request.method)} {sanitize_log(request.path)} - {ex.status} ({duration:.3f}s)",
             extra={
-                'request_method': request.method,
-                'request_path': request.path,
+                'request_method': sanitize_log(str(request.method)),
+                'request_path': sanitize_log(str(request.path)),
                 'response_status': ex.status,
                 'response_duration': duration,
-                'error_reason': ex.reason
+                'error_reason': sanitize_log(str(ex.reason))
             }
         )
         raise
@@ -87,12 +87,12 @@ async def logging_middleware(request: web.Request, handler):
         logger.error(
             f"Exception: {sanitize_log(request.method)} {sanitize_log(request.path)} - 500 ({duration:.3f}s)",
             extra={
-                'request_method': request.method,
-                'request_path': request.path,
+                'request_method': sanitize_log(str(request.method)),
+                'request_path': sanitize_log(str(request.path)),
                 'response_status': 500,
                 'response_duration': duration,
                 'error_type': type(e).__name__,
-                'error_message': str(e)
+                'error_message': sanitize_log(str(e))
             }
         )
         raise

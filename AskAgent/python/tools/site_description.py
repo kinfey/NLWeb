@@ -80,7 +80,8 @@ class ShopifyDescriptionGenerator:
             store_type = "Website"  # Default
             
             # Check for Shopify patterns
-            if 'shopify' in robots_content or '.myshopify.com' in domain:
+            # Use endswith to ensure proper domain matching (not substring)
+            if 'shopify' in robots_content or domain.endswith('.myshopify.com') or domain == 'myshopify.com':
                 store_type = "Shopify"
             # Check for CraftCMS
             elif '/cpresources/' in robots_content:

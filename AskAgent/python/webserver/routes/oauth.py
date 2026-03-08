@@ -26,7 +26,12 @@ def setup_oauth_routes(app: web.Application):
     app.router.add_post('/api/oauth/token', oauth_token_handler)
     app.router.add_post('/api/oauth/logout', oauth_logout_handler)
     app.router.add_get('/api/oauth/validate', oauth_validate_handler)
-    logger.info(f"OAuth providers available in CONFIG: {list(CONFIG.oauth_providers.keys()) if hasattr(CONFIG, 'oauth_providers') else 'None'}")
+    # Log OAuth provider names only (no sensitive data)
+    if hasattr(CONFIG, 'oauth_providers'):
+        provider_names = list(CONFIG.oauth_providers.keys())
+        logger.info(f"OAuth providers available: {len(provider_names)} configured")
+    else:
+        logger.info("OAuth providers: None configured")
 
 
 async def oauth_config_handler(request: web.Request) -> web.Response:
