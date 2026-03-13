@@ -422,7 +422,7 @@ export class UnifiedChatInterface {
 
   async connectSSE(message) {
     // Send query to /ask endpoint via POST (v0.55 protocol)
-    const baseUrl = window.location.origin === 'file://' ? 'http://localhost:8000' : '';
+    const baseUrl = window.location.protocol === 'file:' ? 'http://localhost:8000' : '';
     const content = message.content || {};
 
     // Build v0.55 structured request body
@@ -1476,7 +1476,7 @@ export class UnifiedChatInterface {
     
     // Fetch fresh sites data from server
     try {
-      const baseUrl = window.location.origin === 'file://' ? 'http://localhost:8000' : '';
+      const baseUrl = window.location.protocol === 'file:' ? 'http://localhost:8000' : '';
       const response = await fetch(`${baseUrl}/sites?streaming=false`);
       
       if (!response.ok) {

@@ -323,7 +323,7 @@ class MessageSender:
             await self._send_headers_if_needed(is_streaming=True)
 
             try:
-                if self._is_v055() and message.get("message_type") == "result":
+                if self._is_v055() and message.get("message_type") == "result" and isinstance(message.get("content"), list):
                     # v0.55: emit event: result per item
                     for item in message.get("content", []):
                         await self.handler.http_handler.write_sse_event("result", {

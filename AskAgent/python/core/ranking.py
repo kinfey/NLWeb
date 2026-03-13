@@ -36,8 +36,14 @@ def _nlweb_scorer_available():
     import os
     nlweb_root = os.path.dirname(os.path.dirname(os.path.dirname(
         os.path.dirname(os.path.abspath(__file__)))))
-    bert_cp = os.path.join(nlweb_root, scorer_config["bert_checkpoint"])
-    gam_cp = os.path.join(nlweb_root, scorer_config["gam_checkpoint"])
+    bert_path = scorer_config.get("bert_checkpoint")
+    gam_path = scorer_config.get("gam_checkpoint")
+    if not bert_path or not gam_path:
+        logger.warning("NLWebScorer enabled but checkpoint paths not configured, using LLM scorer")
+        _nlweb_scorer_is_available = False
+        return False
+    bert_cp = os.path.join(nlweb_root, bert_path)
+    gam_cp = os.path.join(nlweb_root, gam_path)
     _nlweb_scorer_is_available = os.path.exists(bert_cp) and os.path.exists(gam_cp)
     if _nlweb_scorer_is_available:
         logger.info("NLWebScorer checkpoints found, will use as default scorer")
@@ -56,8 +62,8 @@ def _get_nlweb_scorer():
         # Resolve NLWeb root: ranking.py -> core -> python -> code -> AskAgent -> NLWeb
         nlweb_root = os.path.dirname(os.path.dirname(os.path.dirname(
             os.path.dirname(os.path.abspath(__file__)))))
-        bert_cp = os.path.join(nlweb_root, scorer_config["bert_checkpoint"])
-        gam_cp = os.path.join(nlweb_root, scorer_config["gam_checkpoint"])
+        bert_cp = os.path.join(nlweb_root, scorer_config.get("bert_checkpoint", ""))
+        gam_cp = os.path.join(nlweb_root, scorer_config.get("gam_checkpoint", ""))
 
         scorer_dir = os.path.join(nlweb_root, "NLWebScorer")
         if scorer_dir not in sys.path:
@@ -266,9 +272,9 @@ The user's question is: {request.query}. The item's description is {item.descrip
             schema_json = json.dumps(json_str) if isinstance(json_str, dict) else json_str
             scorer_items.append({"name": name, "schema_json": schema_json})
 
-        results = scorer.score(query, scorer_items)
+        results = await asyncio.to_thread(scorer.score, query, scorer_items)
 
-        print(f"\n=== NLWebScorer results for: '{query}' ({len(results)} items) ===")
+        logger.debug(f"NLWebScorer results for: '{query}' ({len(results)} items)")
         debug_rows = []
         for i, (url, json_str, name, site) in enumerate(self.items):
             score = results[i]["score"]
@@ -292,8 +298,8 @@ The user's question is: {request.query}. The item's description is {item.descrip
 
         debug_rows.sort(key=lambda x: x[0], reverse=True)
         for score, name in debug_rows:
-            print(f"  {score:3d} - {name[:70]}")
-        print("=== end scores ===")
+            logger.debug(f"  {score:3d} - {name[:70]}")
+        logger.debug("=== end scores ===")
 
     def shouldSend(self, result):
         # Get max_results from handler, or use default
