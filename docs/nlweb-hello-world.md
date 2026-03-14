@@ -37,7 +37,7 @@ These instructions assume that you have Python 3.10+ installed locally.
 
     ```sh
     cd ../../
-    cp .env.template .env
+    cp .env.template .env # Or on Windows: copy .env.template .env
     ```
 
 5. Update your config files (located in the config folder) to make sure your preferred providers match your .env file. There are three files that may need changes.
