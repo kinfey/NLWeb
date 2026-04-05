@@ -445,17 +445,17 @@ class QdrantStorageProvider(StorageProvider):
                     search_filter = models.Filter(must=filter_conditions)
             
             # Perform vector search
-            search_results = await self.client.search(
+            query_response = await self.client.query_points(
                 collection_name=self.collection_name,
-                query_vector=query_embedding,
+                query=query_embedding,
                 query_filter=search_filter,
                 limit=limit,
                 with_payload=True
             )
-            
+
             # Convert search results to ConversationEntry objects
             conversations = []
-            for result in search_results:
+            for result in query_response.points:
                 payload = result.payload
                 
                 # Create ConversationEntry from payload

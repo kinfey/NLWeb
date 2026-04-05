@@ -44,6 +44,15 @@ This repository is organized into the following modules:
 * **[AgentFinder](AgentFinder/)** — Agent discovery service for finding and routing to NLWeb agents across the web.
 * **[DataFinder](DataFinder/)** — Natural language to SQL translator for enterprise data sources (HubSpot, Dynamics 365, Jira) using schema.org-based ontology mappings.
 * **[ModelRouter](ModelRouter/)** — LLM model routing and scoring, selecting cost-effective models that meet quality thresholds.
+* **[NLWebScorer](NLWebScorer/)** — Neural scorer models for ranking and evaluating search result quality.
+
+Supporting directories:
+
+* **[config](config/)** — YAML configuration files for LLM providers, embedding models, retrieval backends, and web server settings.
+* **[static](static/)** — Frontend web UI assets (HTML, CSS, JavaScript) served by the web server.
+* **[demo](demo/)** — Demo scripts and example data sources for getting started.
+* **[scripts](scripts/)** — CLI utilities and helper scripts.
+* **[docs](docs/)** — Full documentation.
 
 Most production deployments will:
 
