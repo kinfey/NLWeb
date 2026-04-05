@@ -14,9 +14,9 @@ Join us in building this connected web of agents.
 
 NLWeb has two primary components:
 
-1. **A simple protocol** to interact with a site using natural language. It returns responses in JSON using Schema.org. See [REST API docs](/docs/nlweb-rest-api.md) for details.
+1. **A simple protocol** to interact with a site using natural language. It returns responses in JSON using Schema.org. See the [NLWeb spec](https://nlweb.ai/spec) for details.
 
-2. **A straightforward implementation** that uses existing markup on sites with structured lists (e.g., products, recipes, attractions, reviews). Combined with UI widgets, this enables conversational interfaces to be added with ease. See [Life of a Chat Query](docs/life-of-a-chat-query.md) for more details.
+2. **A straightforward implementation** that uses existing markup on sites with structured lists (e.g., products, recipes, attractions, reviews). Combined with UI widgets, this enables conversational interfaces to be added with ease.
 
 ## NLWeb and MCP/A2A
 
@@ -72,7 +72,6 @@ Most production deployments will:
 
 ### NLWeb Details
 
-* [Life of a Chat Query](docs/life-of-a-chat-query.md)
 * [Modifying Prompts](docs/nlweb-prompts.md)
 * [Changing Control Flow](docs/nlweb-control-flow.md)
 * [Modifying the User Interface](docs/nlweb-user-interface.md)
